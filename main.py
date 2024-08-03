@@ -1,16 +1,28 @@
-# This is a sample Python script.
+import asyncio
+from aiogram import Bot, Dispatcher, F
+from aiogram.types import Message
+from aiogram.filters import Command, CommandStart
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+bot = Bot(token='6569356204:AAEazNBICS_4rqy9Db4eZ2qv7r25A096Ib8')
+dp = Dispatcher()
 
+@dp.message(CommandStart())
+async def startCommand(message: Message):
+    await message.answer("Команда start")
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+@dp.message(Command('help'))
+async def  hello(message: Message):
+    await message.answer("Команда help")
 
+@dp.message(F.text == "Кто такой Тайлер Дерден?")
+async def text(message: Message):
+    await message.answer("Это не важно...")
 
-# Press the green button in the gutter to run the script.
+async def main():
+    await dp.start_polling(bot)
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print('Shutting down...')
