@@ -1,24 +1,17 @@
 import asyncio
-from aiogram import Bot, Dispatcher, F
-from aiogram.types import Message
-from aiogram.filters import Command, CommandStart
+from aiogram import Bot, Dispatcher
 
-bot = Bot(token='6569356204:AAEazNBICS_4rqy9Db4eZ2qv7r25A096Ib8')
-dp = Dispatcher()
+from Modules.handlers import router
+from Database.models import async_main
 
-@dp.message(CommandStart())
-async def startCommand(message: Message):
-    await message.answer("Команда start")
-
-@dp.message(Command('help'))
-async def  hello(message: Message):
-    await message.answer("Команда help")
-
-@dp.message(F.text == "Кто такой Тайлер Дерден?")
-async def text(message: Message):
-    await message.answer("Это не важно...")
 
 async def main():
+    await async_main()
+
+    bot = Bot(token='6569356204:AAEazNBICS_4rqy9Db4eZ2qv7r25A096Ib8')
+    dp = Dispatcher()
+
+    dp.include_router(router)
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
