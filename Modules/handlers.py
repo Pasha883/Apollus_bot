@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from aiogram import F, Router, types, methods
 from aiogram.client import bot
-from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator
+from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator, InputFile, FSInputFile
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.methods.delete_message import DeleteMessage
@@ -15,6 +15,10 @@ import Database.requests as rq
 router = Router()
 
 
+dz_text = 'Дз не установлено'
+dz_photo_list = list()
+stable_build_date = '06.08.2024 10:48'
+
 #Отлавливание команд
 @router.message(CommandStart())
 async def cmd_start(message: Message):
@@ -24,15 +28,15 @@ async def cmd_start(message: Message):
         user = await rq.set_user(message.from_user.id)
 
         if (user.rights == 'Banned'):
-            await message.reply('Команда start', reply_markup=kb.banned_markup)
+            await message.reply('Выберите пункт меню:', reply_markup=kb.banned_markup)
         if (user.rights == 'User'):
-            await message.reply('Команда start', reply_markup=kb.user_markup)
+            await message.reply('Выберите пункт меню:', reply_markup=kb.user_markup)
         if (user.rights == 'Editor'):
-            await message.reply('Команда start', reply_markup=kb.editor_markup)
+            await message.reply('Выберите пункт меню:', reply_markup=kb.editor_markup)
         if (user.rights == 'Admin'):
-            await message.reply('Команда start', reply_markup=kb.admin_markup)
+            await message.reply('Выберите пункт меню:', reply_markup=kb.admin_markup)
         if (user.rights == 'Creator'):
-            await message.reply('Команда start', reply_markup=kb.creator_markup)
+            await message.reply('Выберите пункт меню:', reply_markup=kb.creator_markup)
     else:
         await message.answer("Пожалуйста, зарегистрируйтесь")
 
@@ -48,9 +52,31 @@ async def cmd_register(message: Message, state: FSMContext):
         await message.reply('Введите Ваше имя')
 
 
+@router.message(Command('op'))
+async def cmd_register(message: Message, state: FSMContext):
+    is_user = await rq.in_database(message.from_user.id)
+
+    if (is_user):
+        user = await rq.set_user(message.from_user.id)
+
+        if (user.rights == 'Creator'):
+            await message.bot.promote_chat_member(message.chat.id, message.from_user.id, False, True,
+                                                  True, True, True,
+                                                  True, True,
+                                                  True, True,
+                                                  True, True)
+            await message.reply('Успешно')
+        else:
+            await message.reply('Ошибка запроса права доступа')
+    else:
+        await state.set_state(st.Register.name)
+        await message.reply('Введите Ваше имя')
+
+
 @router.message(Command('info'))
 async def cmd_info(message: Message):
-    await message.answer('Apollus Bot \nv0.02')
+    await message.answer('Apollus Bot v1.00\nLast stable build date: ' + stable_build_date +
+                         '\nVersion comments: Official release')
 
 
 #Отлавливание состояний
@@ -120,6 +146,25 @@ async def muting_reason(message: Message, state: FSMContext):
     await state.clear()
 
 
+@router.message(st.AddingDZ.text)
+async def adding_dz(message: Message, state: FSMContext):
+    global dz_photo_list
+    dz_photo_list.clear()
+    if message.photo:
+        file_name = f"Photo/{message.photo[-1].file_id}.jpg"
+        await message.bot.download(message.photo[-1], destination=file_name)
+        dz_photo_list.append(file_name)
+        await message.reply('Фото сохранено')
+    else:
+        global dz_text
+        dz_text = message.text
+        await message.reply('ДЗ сохранено')
+
+    await state.clear()
+
+
+
+
 #Отлавливание reply buttons
 @router.message(F.text == 'Статистика')
 async def btn_stats(message: Message):
@@ -143,7 +188,7 @@ async def btn_admin_panel(message: Message):
         user = await rq.set_user(message.from_user.id)
 
         if (user.rights == 'Admin' or user.rights == 'Creator'):
-            await message.reply('Админ панель v0.4', reply_markup=kb.admin_panel)
+            await message.reply('Админ панель v1.0', reply_markup=kb.admin_panel)
         else:
             await message.reply('У вас нет прав')
 
@@ -183,6 +228,57 @@ async def btn_unban_trying(message: Message):
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
+
+
+@router.message(F.text == 'Добавить ДЗ')
+async def btn_add_dz(message: Message, state: FSMContext):
+    is_user = await rq.in_database(message.from_user.id)
+
+    if (is_user):
+        user = await rq.set_user(message.from_user.id)
+
+        if (user.rights == 'Admin' or user.rights == 'Creator' or user.rights == 'Editor'):
+            await message.reply('Отправьте текст или изображение')
+            await state.set_state(st.AddingDZ.text)
+        else:
+            await message.reply('У вас нет прав, запросите права у админа')
+
+    else:
+        await message.reply('Пожалуйста, зарегистрируйтесь')
+
+
+@router.message(F.text == 'ДЗ')
+async def btn_dz(message: Message):
+    is_user = await rq.in_database(message.from_user.id)
+
+    if (is_user):
+        if dz_photo_list:
+            for photo in dz_photo_list:
+                picture = FSInputFile(photo)
+                await message.bot.send_photo(message.chat.id, picture)
+        else:
+            await message.reply(dz_text)
+
+    else:
+        await message.reply('Пожалуйста, зарегистрируйтесь')
+
+
+@router.message(F.text == 'Добавить КР/Тест/Зачёт')
+async def btn_events(message: Message, state: FSMContext):
+    is_user = await rq.in_database(message.from_user.id)
+
+    if (is_user):
+        user = await rq.set_user(message.from_user.id)
+
+        if (user.rights == 'Admin' or user.rights == 'Creator' or user.rights == 'Editor'):
+            await message.reply('Выберите тип события:')
+
+        else:
+            await message.reply('У вас нет прав, запросите права у админа')
+
+    else:
+        await message.reply('Пожалуйста, зарегистрируйтесь')
+
 
 
 #Отлавливание callback query
@@ -295,16 +391,27 @@ async def unban_handler(query: CallbackQuery):
         await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
 
 
-@router.callback_query(F.data == 'kick')
-async def kick_handler(query: CallbackQuery):
-    await query.answer('В разработке')
-    await query.message.answer('В разработке')
-
-
 @router.callback_query(F.data == 'back')
 async def back_handler(query: CallbackQuery):
     await query.answer()
-    await query.message.reply('Админ панель v0.4', reply_markup=kb.admin_panel)
+    await query.message.reply('Админ панель v1.0', reply_markup=kb.admin_panel)
+
+@router.callback_query(F.data == 'editor_add')
+async def editor_add_handler(query: CallbackQuery):
+    is_user = await rq.in_database(query.from_user.id)
+
+    if (is_user):
+        user = await rq.set_user(query.from_user.id)
+
+        if (user.rights == 'Admin' or user.rights == 'Creator'):
+            await query.answer()
+            await query.message.reply('Выберите пользователя для повышения:',
+                                      reply_markup=await kb.users_list(query.from_user.id, "user_editor_add_"))
+        else:
+            await query.answer('У вас нет прав!', show_alert=True)
+
+    else:
+        await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
 
 
 @router.callback_query(F.data.startswith('user_mute_'))
@@ -438,7 +545,7 @@ async def amnesty_yes_handler(query: CallbackQuery):
     user = await rq.set_user(user_id)
     name = user.name
 
-    await query.answer('Пользователь ' + name + ' забанен')
+    await query.answer('Пользователь ' + name + ' разбанен')
     await rq.set_rights(user_id, 'User')
 
     try:
@@ -471,6 +578,29 @@ async def admin_add_handler(query: CallbackQuery):
         await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
 
 
+@router.callback_query(F.data.startswith('user_editor_add'))
+async def editor_add_handler(query: CallbackQuery):
+    user_id = query.data.split('_')[3]
+    user = await rq.set_user(user_id)
+
+    is_user = await rq.in_database(query.from_user.id)
+
+    if (is_user):
+        sender = await rq.set_user(query.from_user.id)
+        if (sender.rights == 'Admin' or sender.rights == 'Creator' and user.rights != 'Creator'):
+            try:
+                await query.answer('Пользователь назначен редактором')
+                await rq.set_rights(user_id, 'Editor')
+
+                await query.message.reply('Пользователь ' + user.name + ' назначен редактором')
+            except:
+                await query.answer('Ошибка')
+        else:
+            await query.answer('У вас нет прав!', show_alert=True)
+    else:
+        await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
+
+
 @router.callback_query(F.data.startswith('user_admin_remove'))
 async def admin_remove_handler(query: CallbackQuery):
     user_id = query.data.split('_')[3]
@@ -494,6 +624,78 @@ async def admin_remove_handler(query: CallbackQuery):
     else:
         await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
 
+
+@router.callback_query(F.data.startswith('ev_'))
+async def ev_handler(query: CallbackQuery, state: FSMContext):
+    event_id = query.data.split('_')[1]
+
+    is_user = await rq.in_database(query.from_user.id)
+
+    if (is_user):
+        sender = await rq.set_user(query.from_user.id)
+        if (sender.rights == 'Admin' or sender.rights == 'Creator' or sender.rights == 'Editor'):
+            await state.set_state(st.AddingEvent.event_type)
+            if(event_id == '1'):
+                await state.update_data(event_type='Контрольная работа')
+            if (event_id == '2'):
+                await state.update_data(event_type='Самостоятельная работа')
+            if (event_id == '3'):
+                await state.update_data(event_type='Тест')
+            if (event_id == '4'):
+                await state.update_data(event_type='Пятиминутка')
+            if (event_id == '5'):
+                await state.update_data(event_type='Зачёт')
+            if (event_id == '6'):
+                await state.update_data(event_type='Чтение наизусть')
+            if (event_id == '7'):
+                await state.update_data(event_type='Другое')
+
+            await state.set_state(st.AddingEvent.subject)
+            await query.message.reply('Выберите предмет:', reply_markup=kb.subjects_markup)
+            await query.answer()
+        else:
+            await query.answer('У вас нет прав!', show_alert=True)
+    else:
+        await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
+
+
+@router.callback_query(F.data.startswith('sub_'))
+async def sub_handler(query: CallbackQuery, state: FSMContext):
+    event_id = query.data.split('_')[1]
+
+    is_user = await rq.in_database(query.from_user.id)
+
+    if (is_user):
+        sender = await rq.set_user(query.from_user.id)
+        if (sender.rights == 'Admin' or sender.rights == 'Creator' or sender.rights == 'Editor'):
+            if(event_id == '1'):
+                await state.update_data(subject='Алгебра')
+            if (event_id == '2'):
+                await state.update_data(subject='Геометрия')
+            if (event_id == '4'):
+                await state.update_data(subject='Русский язык')
+            if (event_id == '5'):
+                await state.update_data(subject='Литература')
+            if (event_id == '6'):
+                await state.update_data(subject='Обществознание')
+            if (event_id == '7'):
+                await state.update_data(subject='ОБЖ')
+            if (event_id == '8'):
+                await state.update_data(subject='Английский язык')
+            if (event_id == '9'):
+                await state.update_data(subject='Информатика')
+            if (event_id == '10'):
+                await state.update_data(subject='Физика')
+
+
+
+            await state.set_state(st.AddingEvent.subject)
+            await query.message.reply('Выберите предмет:', reply_markup=kb.subjects_markup)
+            await query.answer()
+        else:
+            await query.answer('У вас нет прав!', show_alert=True)
+    else:
+        await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
 
 #Все сообщения(кроме команд)
 @router.message()
