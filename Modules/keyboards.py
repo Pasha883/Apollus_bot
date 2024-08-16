@@ -5,14 +5,15 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from Database.requests import get_users
 
 
-control_panel_text = 'Панель управления v1.0'
+control_panel_text = 'Панель управления v1.1'
 
 
 creator_markup = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='ДЗ')],
     [KeyboardButton(text='Админ панель')],
     [KeyboardButton(text='Добавить ДЗ')],
-    [KeyboardButton(text='Статистика')]],
+    [KeyboardButton(text='Статистика')],
+    [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
                                    resize_keyboard=True,
                                    input_field_placeholder=control_panel_text)
 
@@ -21,27 +22,31 @@ admin_markup = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='ДЗ')],
     [KeyboardButton(text='Админ панель')],
     [KeyboardButton(text='Добавить ДЗ')],
-    [KeyboardButton(text='Статистика')]],
+    [KeyboardButton(text='Статистика')],
+    [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
                                    resize_keyboard=True,
                                    input_field_placeholder=control_panel_text)
 
 editor_markup = ReplyKeyboardMarkup(keyboard=[
                                              [KeyboardButton(text='ДЗ')],
                                              [KeyboardButton(text='Добавить ДЗ')],
-                                             [KeyboardButton(text='Статистика')]],
+                                             [KeyboardButton(text='Статистика')],
+                                             [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
                                    resize_keyboard=True,
                                    input_field_placeholder=control_panel_text)
 
 user_markup = ReplyKeyboardMarkup(keyboard=[
                                            [KeyboardButton(text='ДЗ')],
-                                           [KeyboardButton(text='Помощь'), KeyboardButton(text='Статистика')]],
+                                           [KeyboardButton(text='Помощь'), KeyboardButton(text='Статистика')],
+                                           [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
                                    resize_keyboard=True,
                                    input_field_placeholder=control_panel_text)
 
 banned_markup = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='ДЗ')],
     [KeyboardButton(text='Запросить амнистию')],
-    [KeyboardButton(text='Статистика')]],
+    [KeyboardButton(text='Статистика')],
+    [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
                                    resize_keyboard=True,
                                    input_field_placeholder=control_panel_text)
 

@@ -1,12 +1,11 @@
 import random
 from datetime import datetime, timedelta
 
-from aiogram import F, Router, types, methods
+from aiogram import F, Router, types
 from aiogram.client import bot
-from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator, InputFile, FSInputFile
+from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator,  FSInputFile
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.methods.delete_message import DeleteMessage
 
 import Modules.keyboards as kb
 import Modules.States as st
@@ -17,7 +16,7 @@ router = Router()
 
 dz_text = 'Дз не установлено'
 dz_photo_list = list()
-stable_build_date = '06.08.2024 10:48'
+stable_build_date = '16.08.2024 15:25'
 
 #Отлавливание команд
 @router.message(CommandStart())
@@ -52,7 +51,7 @@ async def cmd_register(message: Message, state: FSMContext):
         await message.reply('Введите Ваше имя')
 
 
-@router.message(Command('op'))
+@router.message(Command('give_op'))
 async def cmd_register(message: Message, state: FSMContext):
     is_user = await rq.in_database(message.from_user.id)
 
@@ -65,6 +64,7 @@ async def cmd_register(message: Message, state: FSMContext):
                                                   True, True,
                                                   True, True,
                                                   True, True)
+            
             await message.reply('Успешно')
         else:
             await message.reply('Ошибка запроса права доступа')
@@ -75,8 +75,8 @@ async def cmd_register(message: Message, state: FSMContext):
 
 @router.message(Command('info'))
 async def cmd_info(message: Message):
-    await message.answer('Apollus Bot v1.00\nLast stable build date: ' + stable_build_date +
-                         '\nVersion comments: Official release')
+    await message.answer('Apollus Bot v1.08\nLast stable build date: ' + stable_build_date +
+                         '\nVersion comments: Added new command in reply markup')
 
 
 #Отлавливание состояний
@@ -132,7 +132,7 @@ async def muting_reason(message: Message, state: FSMContext):
 
     await message.bot.restrict_chat_member(chat_id=message.chat.id, user_id=user_id,
                                            permissions=types.ChatPermissions(can_send_messages=False),
-                                           until_date=timestamp)
+                                           until_date=int(timestamp))
 
     await message.reply('Пользователь замучен на ' + str(delta_time) + ' минут по причине ' + str(data['reason']))
 
@@ -258,6 +258,21 @@ async def btn_dz(message: Message):
                 await message.bot.send_photo(message.chat.id, picture)
         else:
             await message.reply(dz_text)
+
+    else:
+        await message.reply('Пожалуйста, зарегистрируйтесь')
+
+
+@router.message(F.text == 'Сколько осталось до 1 сентября?')
+async def btn_que(message: Message):
+    is_user = await rq.in_database(message.from_user.id)
+
+    if (is_user):
+        if(datetime.now() < datetime(2024, 9, 1)):
+            td = datetime(2024, 9, 1) - datetime.now()
+            await message.reply(str(td.days) + ' дней')
+        else:
+            await message.reply('Баран, первое сентября уже наступило. Выходи из спячки и иди в школу!')
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
@@ -487,7 +502,7 @@ async def ban_handler(query: CallbackQuery):
 
     if (is_user):
         sender = await rq.set_user(query.from_user.id)
-        if (sender.rights == 'Admin' or sender.rights == 'Creator'):
+        if ((sender.rights == 'Admin' or sender.rights == 'Creator') & user.rights != 'Creator'):
             await rq.set_rights(user_id, 'Banned')
             await query.answer('Пользователь ' + name + ' забанен')
             await query.message.reply('Пользователь ' + name + ' забанен')
@@ -515,7 +530,7 @@ async def unban_handler(query: CallbackQuery):
 
     if (is_user):
         sender = await rq.set_user(query.from_user.id)
-        if (sender.rights == 'Admin' or sender.rights == 'Creator'):
+        if ((sender.rights == 'Admin' or sender.rights == 'Creator') & user.rights != 'Creator'):
             await rq.set_rights(user_id, 'User')
             await query.answer('Пользователь ' + name + ' разбанен')
             await query.message.reply('Пользователь ' + name + ' разбанен')
