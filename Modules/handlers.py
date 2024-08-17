@@ -75,8 +75,32 @@ async def cmd_register(message: Message, state: FSMContext):
 
 @router.message(Command('info'))
 async def cmd_info(message: Message):
-    await message.answer('Apollus Bot v1.08\nLast stable build date: ' + stable_build_date +
-                         '\nVersion comments: Added new command in reply markup')
+    await message.answer('Apollus Bot v1.09\nLast stable build date: ' + stable_build_date +
+                         '\nVersion comments: Added command /users')
+
+
+@router.message(Command('users'))
+async def cmd_users(message: Message, state: FSMContext):
+    is_user = await rq.in_database(message.from_user.id)
+
+    if (is_user):
+        user = await rq.set_user(message.from_user.id)
+
+        if (user.rights == 'Creator'):
+            text = 'Зарегистрированные пользователи:\n'
+            all_users = await rq.get_users()
+
+            for user in all_users:
+                text += '•'
+                text += str(user.name)
+                text += '\n'
+
+            await message.reply(text)
+        else:
+            await message.reply('Ошибка запроса права доступа')
+    else:
+        await state.set_state(st.Register.name)
+        await message.reply('Введите Ваше имя')
 
 
 #Отлавливание состояний
