@@ -69,8 +69,7 @@ async def cmd_register(message: Message, state: FSMContext):
         else:
             await message.reply('Ошибка запроса права доступа')
     else:
-        await state.set_state(st.Register.name)
-        await message.reply('Введите Ваше имя')
+        await message.reply('Пожалуйста, зарегистрируйтесь')
 
 
 @router.message(Command('info'))
@@ -99,8 +98,7 @@ async def cmd_users(message: Message, state: FSMContext):
         else:
             await message.reply('Ошибка запроса права доступа')
     else:
-        await state.set_state(st.Register.name)
-        await message.reply('Введите Ваше имя')
+        await message.reply('Пожалуйста, зарегистрируйтесь')
 
 
 #Отлавливание состояний
