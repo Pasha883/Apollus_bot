@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from aiogram import F, Router, types
 from aiogram.client import bot
-from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator,  FSInputFile
+from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator, FSInputFile
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 
@@ -13,10 +13,10 @@ import Database.requests as rq
 
 router = Router()
 
-
 dz_text = 'Дз не установлено'
 dz_photo_list = list()
-stable_build_date = '16.08.2024 15:25'
+stable_build_date = '02.09.2024 21:41'
+
 
 #Отлавливание команд
 @router.message(CommandStart())
@@ -52,7 +52,7 @@ async def cmd_register(message: Message, state: FSMContext):
 
 
 @router.message(Command('give_op'))
-async def cmd_register(message: Message, state: FSMContext):
+async def cmd_giveop(message: Message, state: FSMContext):
     is_user = await rq.in_database(message.from_user.id)
 
     if (is_user):
@@ -64,7 +64,7 @@ async def cmd_register(message: Message, state: FSMContext):
                                                   True, True,
                                                   True, True,
                                                   True, True)
-            
+
             await message.reply('Успешно')
         else:
             await message.reply('Ошибка запроса права доступа')
@@ -74,8 +74,8 @@ async def cmd_register(message: Message, state: FSMContext):
 
 @router.message(Command('info'))
 async def cmd_info(message: Message):
-    await message.answer('Apollus Bot v1.09\nLast stable build date: ' + stable_build_date +
-                         '\nVersion comments: Added command /users')
+    await message.answer('Apollus Bot v1.12\nLast stable build date: ' + stable_build_date +
+                         '\nVersion comments: New commands')
 
 
 @router.message(Command('users'))
@@ -134,6 +134,7 @@ async def muting_time(message: Message, state: FSMContext):
     else:
         await message.reply('Некоректное значение, попробуйте снова')
 
+
 @router.message(st.Muting.reason)
 async def muting_reason(message: Message, state: FSMContext):
     reason = message.text
@@ -160,8 +161,9 @@ async def muting_reason(message: Message, state: FSMContext):
 
     try:
         await message.bot.send_message(chat_id=user_id, text='Уважаемый ' + user2.name +
-                                       ', Вы были замучены администратором ' + sender_name + ' на ' + str(delta_time) +
-                                       ' минут ' + ' по причине ' + str(data['reason']))
+                                                             ', Вы были замучены администратором ' + sender_name + ' на ' + str(
+            delta_time) +
+                                                             ' минут ' + ' по причине ' + str(data['reason']))
     except:
         print('Can t send message to user')
 
@@ -177,14 +179,14 @@ async def adding_dz(message: Message, state: FSMContext):
         await message.bot.download(message.photo[-1], destination=file_name)
         dz_photo_list.append(file_name)
         await message.reply('Фото сохранено')
+        global dz_text
+        dz_text = message.caption
+        await message.reply('ДЗ сохранено')
     else:
         global dz_text
         dz_text = message.text
         await message.reply('ДЗ сохранено')
-
     await state.clear()
-
-
 
 
 #Отлавливание reply buttons
@@ -240,8 +242,8 @@ async def btn_unban_trying(message: Message):
             await message.reply(user.name + ', Ваше дело было отправлено администратору')
 
             try:
-                await message.bot.send_message(user2.id,  user.name + ' запросил у Вас амнистию. '
-                                                                      'Вы готовы его разбанить?',
+                await message.bot.send_message(user2.id, user.name + ' запросил у Вас амнистию. '
+                                                                     'Вы готовы его разбанить?',
                                                reply_markup=await kb.amnesty(user.id))
             except:
                 print('Can t send message to user')
@@ -278,23 +280,86 @@ async def btn_dz(message: Message):
             for photo in dz_photo_list:
                 picture = FSInputFile(photo)
                 await message.bot.send_photo(message.chat.id, picture)
-        else:
-            await message.reply(dz_text)
+            if isinstance(dz_text, str):
+                await message.reply(dz_text)
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
 
 
-@router.message(F.text == 'Сколько осталось до 1 сентября?')
+@router.message(F.text == 'Расписание')
 async def btn_que(message: Message):
     is_user = await rq.in_database(message.from_user.id)
 
     if (is_user):
-        if(datetime.now() < datetime(2024, 9, 1)):
-            td = datetime(2024, 9, 1) - datetime.now()
-            await message.reply(str(td.days) + ' дней')
-        else:
-            await message.reply('Баран, первое сентября уже наступило. Выходи из спячки и иди в школу!')
+        day_of_week = datetime.today().weekday()
+        print(day_of_week)
+
+        if 4 <= day_of_week <= 6:
+            await message.reply("Расписание на понедельник:\n"
+                                "1 урок: Разговоры о важном\n"
+                                "2 урок: Алгебра\n"
+                                "3 урок: История\n"
+                                "4 урок: Физика\n"
+                                "5 урок: Физ-ра\n"
+                                "6 урок: Англ. яз. (1 группа)/\n"
+                                "        Информ. (2 группа)\n"
+                                "7 урок: Геометрия\n"
+                                "8 урок: Русский яз.\n\n"
+                                "Данные актуальны исключительно \n"
+                                "на момент первого триметра и НЕ учитывают\n"
+                                "возможные изменения в расписании!")
+        if day_of_week == 0:
+            await message.reply("Расписание на вторник:\n"
+                                "1 урок: Литература\n"
+                                "2 урок: Химия\n"
+                                "3 урок: Обществознание\n"
+                                "4 урок: Русский яз.\n"
+                                "5 урок: Биология\n"
+                                "6 урок: Англ. яз. (обе группы)\n\n"
+                                "Данные актуальны исключительно \n"
+                                "на момент первого триметра и НЕ учитывают\n"
+                                "возможные изменения в расписании!")
+        if day_of_week == 1:
+            await message.reply("Расписание на среду:\n"
+                                "1 урок: Физика\n"
+                                "2 урок: ОБЖ/ОБЗР\n"
+                                "3 урок: История\n"
+                                "4 урок: Биология\n"
+                                "5 урок: Алгебра\n"
+                                "6 урок: География\n"
+                                "Внеурочка 1: Математика\n"
+                                "Внеурочка 2: Обществознание\n\n"
+                                "Данные актуальны исключительно \n"
+                                "на момент первого триметра и НЕ учитывают\n"
+                                "возможные изменения в расписании!")
+        if day_of_week == 2:
+            await message.reply("Расписание на четверг:\n"
+                                "1 урок: *Отсутствует*\n"
+                                "2 урок: Литература\n"
+                                "3 урок: Статистика\n"
+                                "4 урок: Физика\n"
+                                "5 урок: Химия\n"
+                                "6 урок: Информ. (1 группа)/\n"
+                                "        Англ. яз. (2 группа)\n"
+                                "7 урок: Алгебра\n"
+                                "8 урок: Физ-ра\n\n"
+                                "Данные актуальны исключительно \n"
+                                "на момент первого триметра и НЕ учитывают\n"
+                                "возможные изменения в расписании!")
+        if day_of_week == 3:
+            await message.reply("Расписание на пятницу:\n"
+                                "1 урок: Русский яз.\n"
+                                "2 урок: Алгебра\n"
+                                "3 урок: Геометрия\n"
+                                "4 урок: География\n"
+                                "5 урок: Литература\n"
+                                "6 урок: Англ. яз. (обе группы)\n"
+                                "7 урок: Труд (обе группы)\n\n"
+                                "Данные актуальны исключительно \n"
+                                "на момент первого триметра и НЕ учитывают\n"
+                                "возможные изменения в расписании!")
+
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
@@ -315,7 +380,6 @@ async def btn_events(message: Message, state: FSMContext):
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
-
 
 
 #Отлавливание callback query
@@ -433,6 +497,7 @@ async def back_handler(query: CallbackQuery):
     await query.answer()
     await query.message.reply('Админ панель v1.0', reply_markup=kb.admin_panel)
 
+
 @router.callback_query(F.data == 'editor_add')
 async def editor_add_handler(query: CallbackQuery):
     is_user = await rq.in_database(query.from_user.id)
@@ -524,7 +589,7 @@ async def ban_handler(query: CallbackQuery):
 
     if (is_user):
         sender = await rq.set_user(query.from_user.id)
-        if ((sender.rights == 'Admin' or sender.rights == 'Creator') & user.rights != 'Creator'):
+        if (sender.rights == 'Admin' or sender.rights == 'Creator') & user.rights != 'Creator':
             await rq.set_rights(user_id, 'Banned')
             await query.answer('Пользователь ' + name + ' забанен')
             await query.message.reply('Пользователь ' + name + ' забанен')
@@ -552,7 +617,7 @@ async def unban_handler(query: CallbackQuery):
 
     if (is_user):
         sender = await rq.set_user(query.from_user.id)
-        if ((sender.rights == 'Admin' or sender.rights == 'Creator') & user.rights != 'Creator'):
+        if (sender.rights == 'Admin' or sender.rights == 'Creator') and user.rights != 'Creator':
             await rq.set_rights(user_id, 'User')
             await query.answer('Пользователь ' + name + ' разбанен')
             await query.message.reply('Пользователь ' + name + ' разбанен')
@@ -672,7 +737,7 @@ async def ev_handler(query: CallbackQuery, state: FSMContext):
         sender = await rq.set_user(query.from_user.id)
         if (sender.rights == 'Admin' or sender.rights == 'Creator' or sender.rights == 'Editor'):
             await state.set_state(st.AddingEvent.event_type)
-            if(event_id == '1'):
+            if (event_id == '1'):
                 await state.update_data(event_type='Контрольная работа')
             if (event_id == '2'):
                 await state.update_data(event_type='Самостоятельная работа')
@@ -705,7 +770,7 @@ async def sub_handler(query: CallbackQuery, state: FSMContext):
     if (is_user):
         sender = await rq.set_user(query.from_user.id)
         if (sender.rights == 'Admin' or sender.rights == 'Creator' or sender.rights == 'Editor'):
-            if(event_id == '1'):
+            if (event_id == '1'):
                 await state.update_data(subject='Алгебра')
             if (event_id == '2'):
                 await state.update_data(subject='Геометрия')
@@ -724,8 +789,6 @@ async def sub_handler(query: CallbackQuery, state: FSMContext):
             if (event_id == '10'):
                 await state.update_data(subject='Физика')
 
-
-
             await state.set_state(st.AddingEvent.subject)
             await query.message.reply('Выберите предмет:', reply_markup=kb.subjects_markup)
             await query.answer()
@@ -733,6 +796,7 @@ async def sub_handler(query: CallbackQuery, state: FSMContext):
             await query.answer('У вас нет прав!', show_alert=True)
     else:
         await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
+
 
 #Все сообщения(кроме команд)
 @router.message()
@@ -743,6 +807,11 @@ async def all_mess(message: Message):
     message_id = message.message_id
 
     if (not is_user):
+        try:
+            print('Uncown: ' + message.text + ' ' + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        except:
+            print('Uncown: ' + 'Resended message' + ' ' + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+
         await message.bot.delete_message(message.chat.id, message_id)
         try:
             await message.bot.send_message(user_id, 'Для продолжения общения, зарегистрируйтесь. Для этого введите'
@@ -754,5 +823,15 @@ async def all_mess(message: Message):
         user = await rq.set_user(user_id)
         if (user.rights != 'Banned'):
             await rq.messages_counter_update(user_id)
+            try:
+                print(user.name + ': ' + message.text + ' ' + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            except:
+                print(user.name + ': ' + 'Resended message' + ' ' + str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         else:
             await message.bot.delete_message(message.chat.id, message_id)
+            try:
+                print('(Вanned) ' + user.name + ': ' + message.text + ' ' + str(
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            except:
+                print('(Вanned) ' + user.name + ': ' + 'Resended message' + ' ' + str(
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S')))

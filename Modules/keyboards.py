@@ -4,51 +4,48 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from Database.requests import get_users
 
-
-control_panel_text = 'Панель управления v1.1'
-
+control_panel_text = 'Панель управления v1.2'
 
 creator_markup = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='ДЗ')],
+    [KeyboardButton(text='Расписание')],
     [KeyboardButton(text='Админ панель')],
     [KeyboardButton(text='Добавить ДЗ')],
-    [KeyboardButton(text='Статистика')],
-    [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
-                                   resize_keyboard=True,
-                                   input_field_placeholder=control_panel_text)
-
+    [KeyboardButton(text='Статистика')]],
+    resize_keyboard=True,
+    input_field_placeholder=control_panel_text)
 
 admin_markup = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='ДЗ')],
+    [KeyboardButton(text='Расписание')],
     [KeyboardButton(text='Админ панель')],
     [KeyboardButton(text='Добавить ДЗ')],
-    [KeyboardButton(text='Статистика')],
-    [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
-                                   resize_keyboard=True,
-                                   input_field_placeholder=control_panel_text)
+    [KeyboardButton(text='Статистика')]],
+    resize_keyboard=True,
+    input_field_placeholder=control_panel_text)
 
 editor_markup = ReplyKeyboardMarkup(keyboard=[
-                                             [KeyboardButton(text='ДЗ')],
-                                             [KeyboardButton(text='Добавить ДЗ')],
-                                             [KeyboardButton(text='Статистика')],
-                                             [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
-                                   resize_keyboard=True,
-                                   input_field_placeholder=control_panel_text)
+    [KeyboardButton(text='ДЗ')],
+    [KeyboardButton(text='Расписание')],
+    [KeyboardButton(text='Добавить ДЗ')],
+    [KeyboardButton(text='Статистика')]],
+    resize_keyboard=True,
+    input_field_placeholder=control_panel_text)
 
 user_markup = ReplyKeyboardMarkup(keyboard=[
-                                           [KeyboardButton(text='ДЗ')],
-                                           [KeyboardButton(text='Помощь'), KeyboardButton(text='Статистика')],
-                                           [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
-                                   resize_keyboard=True,
-                                   input_field_placeholder=control_panel_text)
+    [KeyboardButton(text='ДЗ')],
+    [KeyboardButton(text='Расписание')],
+    [KeyboardButton(text='Помощь'), KeyboardButton(text='Статистика')]],
+    resize_keyboard=True,
+    input_field_placeholder=control_panel_text)
 
 banned_markup = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='ДЗ')],
+    [KeyboardButton(text='Расписание')],
     [KeyboardButton(text='Запросить амнистию')],
-    [KeyboardButton(text='Статистика')],
-    [KeyboardButton(text='Сколько осталось до 1 сентября?')]],
-                                   resize_keyboard=True,
-                                   input_field_placeholder=control_panel_text)
+    [KeyboardButton(text='Статистика')]],
+    resize_keyboard=True,
+    input_field_placeholder=control_panel_text)
 
 admin_panel = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Замутить пользователя', callback_data='mute')],
@@ -59,7 +56,6 @@ admin_panel = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Удалить админа', callback_data='admin_remove')],
     [InlineKeyboardButton(text='Добавить редактора', callback_data='editor_add')]])
 
-
 events_markup = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Контрольная работа', callback_data='ev_1')],
     [InlineKeyboardButton(text='Самостоятельная работа', callback_data='ev_2')],
@@ -69,7 +65,6 @@ events_markup = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Чтение наизусть', callback_data='ev_6')],
     [InlineKeyboardButton(text='Другое', callback_data='ev_7')]
 ])
-
 
 subjects_markup = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Алгебра', callback_data='sub_1')],
@@ -91,16 +86,16 @@ subjects_markup = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 
-
 async def users_list(sender_id, metadata):
     all_users = await get_users()
     user_list = InlineKeyboardBuilder()
 
     for user in all_users:
-        if(user.id != sender_id ):
+        if (user.id != sender_id):
             user_list.add(InlineKeyboardButton(text=user.name, callback_data=f"{metadata}{user.id}"))
     user_list.add(InlineKeyboardButton(text='Назад', callback_data='back'))
     return user_list.adjust(2).as_markup()
+
 
 async def amnesty(banned_id):
     keyboard = InlineKeyboardBuilder()
@@ -108,4 +103,3 @@ async def amnesty(banned_id):
     keyboard.add(InlineKeyboardButton(text='Да', callback_data=f"user_amnesty_yes_{banned_id}"))
     keyboard.add(InlineKeyboardButton(text='Нет', callback_data=f"user_amnesty_no_{banned_id}"))
     return keyboard.as_markup()
-
