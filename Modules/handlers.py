@@ -173,17 +173,18 @@ async def muting_reason(message: Message, state: FSMContext):
 @router.message(st.AddingDZ.text)
 async def adding_dz(message: Message, state: FSMContext):
     global dz_photo_list
+    global dz_text
     dz_photo_list.clear()
     if message.photo:
         file_name = f"Photo/{message.photo[-1].file_id}.jpg"
         await message.bot.download(message.photo[-1], destination=file_name)
         dz_photo_list.append(file_name)
         await message.reply('Фото сохранено')
-        global dz_text
+        
         dz_text = message.caption
         await message.reply('ДЗ сохранено')
     else:
-        global dz_text
+
         dz_text = message.text
         await message.reply('ДЗ сохранено')
     await state.clear()
@@ -280,8 +281,8 @@ async def btn_dz(message: Message):
             for photo in dz_photo_list:
                 picture = FSInputFile(photo)
                 await message.bot.send_photo(message.chat.id, picture)
-            if isinstance(dz_text, str):
-                await message.reply(dz_text)
+        if isinstance(dz_text, str):
+            await message.reply(dz_text)
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
@@ -335,7 +336,7 @@ async def btn_que(message: Message):
                                 "возможные изменения в расписании!")
         if day_of_week == 2:
             await message.reply("Расписание на четверг:\n"
-                                "1 урок: *Отсутствует*\n"
+                                "1 урок: Rossia - moi gorizonti\n"
                                 "2 урок: Литература\n"
                                 "3 урок: Статистика\n"
                                 "4 урок: Физика\n"
