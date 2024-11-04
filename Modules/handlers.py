@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from aiogram import F, Router, types
 from aiogram.client import bot
-from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator, FSInputFile
+from aiogram.types import Message, CallbackQuery, ChatMemberAdministrator
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 
@@ -13,9 +13,42 @@ import Database.requests as rq
 
 router = Router()
 
+last_update = datetime.now()
+
+days = {0: ["Алгебра", "История", "Физика", "Английский язык(гр 1)", "Информатика(гр 2)", "Геометрия"],
+        1: ["Литература", "Химия", "Обществознание", "Русский язык", "Биология", "Английский язык(гр 1)", "Английский язык(гр 2)"],
+        2: ["Физика", "ОБЖ/ОБЗР", "История", "Биология", "Алгебра", "География"],
+        3: ["Литература", "Статистика", "Физика", "Химия", "Информатика(гр 1)", "Английский язык(гр 2)", "Алгебра"],
+        4: ["Русский язык", "Алгебра", "Геометрия", "География", "Литература", "Английский язык(гр 1)", "Английский язык(гр 2)", "Труд(гр 1)", "Труд(гр 2)"]}
+
+dz_texts = {"Алгебра": "Нет информации",
+            "Геометрия": "Нет информации",
+            "Статистика": "Нет информации",
+            "История": "Нет информации",
+            "Физика": "Нет информации",
+            "Английский язык(гр 1)": "Нет информации",
+            "Английский язык(гр 2)": "Нет информации",
+            "Информатика(гр 1)": "Нет информации",
+            "Информатика(гр 2)": "Нет информации",
+            "Труд(гр 1)": "Нет информации",
+            "Труд(гр 2)": "Нет информации",
+            "Русский язык": "Нет информации",
+            "Литература": "Нет информации",
+            "Химия": "Нет информации",
+            "Биология": "Нет информации",
+            "ОБЖ/ОБЗР": "Нет информации",
+            "Обществознание": "Нет информации",
+            "География": "Нет информации"}
+
+
 dz_text = 'Дз не установлено'
 dz_photo_list = list()
-stable_build_date = '02.09.2024 21:41'
+stable_build_date = 'All builds are unstable'
+
+
+def service_clear():
+    for subject in days[datetime.today().weekday()]:
+        dz_texts[subject] = "Нет информации"
 
 
 #Отлавливание команд
@@ -74,7 +107,7 @@ async def cmd_giveop(message: Message, state: FSMContext):
 
 @router.message(Command('info'))
 async def cmd_info(message: Message):
-    await message.answer('Apollus Bot v1.12\nLast stable build date: ' + stable_build_date +
+    await message.answer('Apollus Bot v1.20 alpha 2\nLast stable build date: ' + stable_build_date +
                          '\nVersion comments: New commands')
 
 
@@ -172,21 +205,13 @@ async def muting_reason(message: Message, state: FSMContext):
 
 @router.message(st.AddingDZ.text)
 async def adding_dz(message: Message, state: FSMContext):
-    global dz_photo_list
-    global dz_text
-    dz_photo_list.clear()
-    if message.photo:
-        file_name = f"Photo/{message.photo[-1].file_id}.jpg"
-        await message.bot.download(message.photo[-1], destination=file_name)
-        dz_photo_list.append(file_name)
-        await message.reply('Фото сохранено')
-        
-        dz_text = message.caption
-        await message.reply('ДЗ сохранено')
-    else:
+    global days
+    global dz_texts
 
-        dz_text = message.text
-        await message.reply('ДЗ сохранено')
+    data = await state.get_data()
+
+    dz_texts[data['subject']] = message.text
+    await message.reply("Дз сохранено")
     await state.clear()
 
 
@@ -257,14 +282,19 @@ async def btn_unban_trying(message: Message):
 
 @router.message(F.text == 'Добавить ДЗ')
 async def btn_add_dz(message: Message, state: FSMContext):
+    now = datetime.now()
+    
+
+
     is_user = await rq.in_database(message.from_user.id)
 
     if (is_user):
         user = await rq.set_user(message.from_user.id)
 
         if (user.rights == 'Admin' or user.rights == 'Creator' or user.rights == 'Editor'):
-            await message.reply('Отправьте текст или изображение')
-            await state.set_state(st.AddingDZ.text)
+            #await message.reply('Отправьте текст или изображение')
+            #await state.set_state(st.AddingDZ.text)
+            await message.reply('Выберите предмет:', reply_markup=kb.subjects_markup)
         else:
             await message.reply('У вас нет прав, запросите права у админа')
 
@@ -275,14 +305,46 @@ async def btn_add_dz(message: Message, state: FSMContext):
 @router.message(F.text == 'ДЗ')
 async def btn_dz(message: Message):
     is_user = await rq.in_database(message.from_user.id)
+    global days
 
     if (is_user):
-        if dz_photo_list:
-            for photo in dz_photo_list:
-                picture = FSInputFile(photo)
-                await message.bot.send_photo(message.chat.id, picture)
-        if isinstance(dz_text, str):
-            await message.reply(dz_text)
+        day_of_week = datetime.today().weekday()
+        if(day_of_week <= 5):
+            list = days[day_of_week + 1]
+        else:
+            list = days[0]
+
+        mess = ""
+
+        if 4 <= day_of_week <= 6:
+            mess += "ДЗ на понедельник:\n"
+            for subject in list:
+                mess += subject + ':\n'
+                mess += dz_texts[subject] + '\n\n'
+        if day_of_week == 0:
+            mess += "ДЗ на вторник:\n"
+            for subject in list:
+                mess += subject + ':\n'
+                mess += dz_texts[subject] + '\n\n'
+        if day_of_week == 1:
+            mess += "ДЗ на среду:\n"
+            for subject in list:
+                mess += subject + ':\n'
+                mess += dz_texts[subject] + '\n\n'
+        if day_of_week == 2:
+            mess += "ДЗ на четверг:\n"
+            for subject in list:
+                mess += subject + ':\n'
+                mess += dz_texts[subject] + '\n\n'
+        if day_of_week == 3:
+            mess += "ДЗ на пятницу:\n"
+            for subject in list:
+                mess += subject + ':\n'
+                mess += dz_texts[subject] + '\n\n'
+
+
+
+        await message.reply(mess)
 
     else:
         await message.reply('Пожалуйста, зарегистрируйтесь')
@@ -336,7 +398,7 @@ async def btn_que(message: Message):
                                 "возможные изменения в расписании!")
         if day_of_week == 2:
             await message.reply("Расписание на четверг:\n"
-                                "1 урок: Rossia - moi gorizonti\n"
+                                "1 урок: *Отсутствует*\n"
                                 "2 урок: Литература\n"
                                 "3 урок: Статистика\n"
                                 "4 урок: Физика\n"
@@ -590,7 +652,7 @@ async def ban_handler(query: CallbackQuery):
 
     if (is_user):
         sender = await rq.set_user(query.from_user.id)
-        if (sender.rights == 'Admin' or sender.rights == 'Creator') & user.rights != 'Creator':
+        if (sender.rights == 'Admin' or sender.rights == 'Creator') and user.rights != 'Creator':
             await rq.set_rights(user_id, 'Banned')
             await query.answer('Пользователь ' + name + ' забанен')
             await query.message.reply('Пользователь ' + name + ' забанен')
@@ -724,6 +786,28 @@ async def admin_remove_handler(query: CallbackQuery):
                 await query.answer('Ошибка')
         else:
             await query.answer('У вас нет прав!', show_alert=True)
+    else:
+        await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
+
+
+@router.callback_query(F.data.startswith('subjects_choice'))
+async def subject_choice(query: CallbackQuery, state: FSMContext):
+    is_user = await rq.in_database(query.from_user.id)
+
+    if (is_user):
+        user = await rq.set_user(query.from_user.id)
+
+        if (user.rights == 'Admin' or user.rights == 'Creator'):
+            await query.answer()
+            await query.message.reply('Введите текст задания\n'
+                                      'Внимание, медиафайлы пока не поддерживаются:')
+            await state.set_state(st.AddingDZ.subject)
+            sub = query.data.split("_")[2]
+            await state.update_data(subject=sub)
+            await state.set_state(st.AddingDZ.text)
+        else:
+            await query.answer('У вас нет прав!', show_alert=True)
+
     else:
         await query.answer('Пожалуйста, зарегистрируйтесь', show_alert=True)
 

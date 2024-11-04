@@ -67,22 +67,25 @@ events_markup = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 subjects_markup = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Алгебра', callback_data='sub_1')],
-    [InlineKeyboardButton(text='Геометрия', callback_data='sub_2')],
-    [InlineKeyboardButton(text='Русский язык', callback_data='sub_3')],
-    [InlineKeyboardButton(text='Литература', callback_data='sub_4')],
-    [InlineKeyboardButton(text='Обществознание', callback_data='sub_5')],
-    [InlineKeyboardButton(text='ОБЖ', callback_data='sub_6')],
-    [InlineKeyboardButton(text='Английский язык', callback_data='sub_7')],
-    [InlineKeyboardButton(text='Информатика', callback_data='sub_8')],
-    [InlineKeyboardButton(text='Физика', callback_data='sub_9')],
-    [InlineKeyboardButton(text='Химия', callback_data='sub_10')],
-    [InlineKeyboardButton(text='География', callback_data='sub_11')],
-    [InlineKeyboardButton(text='История', callback_data='sub_12')],
-    [InlineKeyboardButton(text='Музыка(МХК)', callback_data='sub_13')],
-    [InlineKeyboardButton(text='Технология', callback_data='sub_14')],
-    [InlineKeyboardButton(text='Родной язык(Родная литература)', callback_data='sub_15')],
-    [InlineKeyboardButton(text='Физ-ра', callback_data='sub_16')],
+    [InlineKeyboardButton(text="Алгебра", callback_data='subjects_choice_Алгебра')],
+    [InlineKeyboardButton(text="Геометрия", callback_data='subjects_choice_Геометрия')],
+    [InlineKeyboardButton(text="Статистика", callback_data='subjects_choice_Статистика')],
+    [InlineKeyboardButton(text="Русский язык", callback_data='subjects_choice_Русский язык')],
+    [InlineKeyboardButton(text="Литература", callback_data='subjects_choice_Литература')],
+    [InlineKeyboardButton(text="Химия", callback_data='subjects_choice_Химия')],
+    [InlineKeyboardButton(text="Биология", callback_data='subjects_choice_Биология')],
+    [InlineKeyboardButton(text="История", callback_data='subjects_choice_История')],
+    [InlineKeyboardButton(text="Обществознание", callback_data='subjects_choice_Обществознание')],
+    [InlineKeyboardButton(text="ОБЖ/ОБЗР", callback_data='subjects_choice_ОБЖ/ОБЗР')],
+    [InlineKeyboardButton(text="Английский язык(гр 1)", callback_data='subjects_choice_Английский язык(гр 1)')],
+    [InlineKeyboardButton(text="Английский язык(гр 2)", callback_data='subjects_choice_Английский язык(гр 2)')],
+    [InlineKeyboardButton(text="Информатика(гр 1)", callback_data='subjects_choice_Информатика(гр 1)')],
+    [InlineKeyboardButton(text="Информатика(гр 2)", callback_data='subjects_choice_Информатика(гр 2)')],
+    [InlineKeyboardButton(text="Труд(гр 1)", callback_data='subjects_choice_Труд(гр 1)')],
+    [InlineKeyboardButton(text="Труд(гр 2)", callback_data='subjects_choice_Труд(гр 2)')],
+    [InlineKeyboardButton(text="Физика", callback_data='subjects_choice_Физика')],
+    [InlineKeyboardButton(text="География", callback_data='subjects_choice_География')],
+
 ])
 
 

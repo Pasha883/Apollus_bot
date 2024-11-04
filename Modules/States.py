@@ -12,6 +12,7 @@ class Muting(StatesGroup):
 
 
 class AddingDZ(StatesGroup):
+    subject = State()
     text = State()
 
 

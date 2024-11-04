@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from aiogram import Bot, Dispatcher
 
 from Modules.handlers import router
@@ -25,6 +26,7 @@ async def main():
     dp = Dispatcher()
 
     dp.include_router(router)
+    print("test")
     await dp.start_polling(bot)
 
 if __name__ == '__main__':

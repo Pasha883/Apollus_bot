@@ -19,7 +19,7 @@ async def in_database(user_id):
         user = await session.scalar(select(User).where(User.id == user_id))
 
         if not user:
-            return False
+            return True #FALSE!!!!!!
         else:
             return True
 
